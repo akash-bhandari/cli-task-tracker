@@ -3,6 +3,18 @@
 A tiny command-line task tracker built with **Node core modules only**
 (`fs.promises`, `path`, `process.argv`) — no npm dependencies.
 
+## Usage
+
+```
+node src/index.js add "Buy milk"
+node src/index.js list
+node src/index.js complete 1
+node src/index.js delete 1
+```
+
+Tasks are stored in `tasks.json` in the project root and persist between
+separate runs of the script.
+
 ## Commands
 
 Run the tool from the project root with `node src/index.js <command> [args]`.
@@ -21,9 +33,6 @@ list back to disk before exiting.
 ```json
 { "id": 1, "text": "Buy milk", "completed": false, "createdAt": "2026-01-15T10:00:00.000Z" }
 ```
-
-Tasks are persisted to `tasks.json` in the project root, created
-automatically on first run.
 
 ## Tests
 
