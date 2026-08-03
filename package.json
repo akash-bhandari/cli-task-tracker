@@ -1,0 +1,11 @@
+{
+  "name": "cli-task-tracker",
+  "version": "1.0.0",
+  "description": "A CLI task tracker built with Node core modules only.",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "license": "MIT"
+}
