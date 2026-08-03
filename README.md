@@ -5,6 +5,10 @@ A tiny command-line task tracker built with **Node core modules only**
 
 ## Commands
 
+Run the tool from the project root with `node src/index.js <command> [args]`.
+Each command reads `tasks.json`, makes its change, and writes the updated
+list back to disk before exiting.
+
 | Command | Example | Behavior |
 |---|---|---|
 | `add` | `node src/index.js add "Buy milk"` | Creates a new task with an auto-incremented id, appends it, saves to disk. |
