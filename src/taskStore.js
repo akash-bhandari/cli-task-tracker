@@ -4,27 +4,27 @@ const path = require('path');
 const TASKS_FILE = path.join(__dirname, '..', 'tasks.json');
 
 /**
- * Read all tasks from disk.
+ * Read tasks from disk. Accepts an optional filePath so tests can point
+ * this at a separate test file instead of the real tasks.json.
  * - If the file doesn't exist yet (first run), return an empty array.
- * - If the file exists but contains invalid JSON, throw a clear error
- *   instead of silently losing/overwriting the user's data.
+ * - If the file exists but contains invalid JSON, throw a clear error.
  */
-async function readTasks() {
+async function readTasks(filePath = TASKS_FILE) {
   let raw;
   try {
-    raw = await fs.readFile(TASKS_FILE, 'utf-8');
+    raw = await fs.readFile(filePath, 'utf-8');
   } catch (err) {
     if (err.code === 'ENOENT') {
       return []; // first run — no file yet, that's expected
     }
-    throw err; // some other read error (permissions, etc.) — don't swallow it
+    throw err;
   }
 
   try {
     return JSON.parse(raw);
   } catch (err) {
     throw new Error(
-      `tasks.json is corrupted and could not be parsed as JSON. ` +
+      `${path.basename(filePath)} is corrupted and could not be parsed as JSON. ` +
       `Back it up and delete it, or fix it by hand. (${err.message})`
     );
   }
@@ -33,8 +33,8 @@ async function readTasks() {
 /**
  * Persist the full tasks array back to disk, pretty-printed.
  */
-async function writeTasks(tasks) {
-  await fs.writeFile(TASKS_FILE, JSON.stringify(tasks, null, 2), 'utf-8');
+async function writeTasks(tasks, filePath = TASKS_FILE) {
+  await fs.writeFile(filePath, JSON.stringify(tasks, null, 2), 'utf-8');
 }
 
 /**
@@ -45,4 +45,59 @@ function nextId(tasks) {
   return Math.max(...tasks.map((t) => t.id)) + 1;
 }
 
-module.exports = { readTasks, writeTasks, nextId, TASKS_FILE };
+/* ---------------------------------------------------------------------
+ * Pure store-logic functions.
+ * These never touch disk — they take the current tasks array and return
+ * a result object describing success/failure. This is what Task 14's
+ * cheat sheet means by "test the store logic directly": these functions
+ * are trivial to unit test, and the CLI commands layer just wires them
+ * up to readTasks/writeTasks and console output.
+ * ------------------------------------------------------------------- */
+
+function addTask(tasks, text) {
+  const trimmed = (text || '').trim();
+  if (!trimmed) {
+    return { success: false, error: 'Task text cannot be empty' };
+  }
+
+  const task = {
+    id: nextId(tasks),
+    text: trimmed,
+    completed: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  return { success: true, task, tasks: [...tasks, task] };
+}
+
+function completeTask(tasks, id) {
+  const task = tasks.find((t) => t.id === id);
+  if (!task) {
+    return { success: false, error: `Task with id ${id} not found` };
+  }
+
+  const updatedTasks = tasks.map((t) =>
+    t.id === id ? { ...t, completed: true } : t
+  );
+
+  return { success: true, task: { ...task, completed: true }, tasks: updatedTasks };
+}
+
+function deleteTask(tasks, id) {
+  const exists = tasks.some((t) => t.id === id);
+  if (!exists) {
+    return { success: false, error: `Task with id ${id} not found` };
+  }
+
+  return { success: true, tasks: tasks.filter((t) => t.id !== id) };
+}
+
+module.exports = {
+  readTasks,
+  writeTasks,
+  nextId,
+  addTask,
+  completeTask,
+  deleteTask,
+  TASKS_FILE,
+};

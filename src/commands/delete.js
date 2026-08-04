@@ -1,4 +1,4 @@
-const { readTasks, writeTasks } = require('../taskStore');
+const { readTasks, writeTasks, deleteTask } = require('../taskStore');
 
 async function del(args) {
   const id = Number(args[0]);
@@ -10,17 +10,15 @@ async function del(args) {
   }
 
   const tasks = await readTasks();
-  const exists = tasks.some((t) => t.id === id);
+  const result = deleteTask(tasks, id);
 
-  if (!exists) {
-    console.error(`Task ${id} not found.`);
+  if (!result.success) {
+    console.error(result.error);
     process.exitCode = 1;
-    return;
+    return; // no-op on disk — don't rewrite the file
   }
 
-  const remaining = tasks.filter((t) => t.id !== id);
-  await writeTasks(remaining);
-
+  await writeTasks(result.tasks);
   console.log(`Deleted task ${id}.`);
 }
 

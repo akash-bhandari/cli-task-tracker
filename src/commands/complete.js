@@ -1,4 +1,4 @@
-const { readTasks, writeTasks } = require('../taskStore');
+const { readTasks, writeTasks, completeTask } = require('../taskStore');
 
 async function complete(args) {
   const id = Number(args[0]);
@@ -10,18 +10,16 @@ async function complete(args) {
   }
 
   const tasks = await readTasks();
-  const task = tasks.find((t) => t.id === id);
+  const result = completeTask(tasks, id);
 
-  if (!task) {
-    console.error(`Task ${id} not found.`);
+  if (!result.success) {
+    console.error(result.error);
     process.exitCode = 1;
-    return;
+    return; // no-op on disk — don't rewrite the file
   }
 
-  task.completed = true;
-  await writeTasks(tasks);
-
-  console.log(`Completed task ${id}: "${task.text}"`);
+  await writeTasks(result.tasks);
+  console.log(`Completed task ${id}: "${result.task.text}"`);
 }
 
 module.exports = complete;
