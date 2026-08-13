@@ -1,6 +1,6 @@
-const { readTasks, writeTasks, completeTask } = require('../taskStore');
+import { readTasks, writeTasks, completeTask } from '../taskStore';
 
-async function complete(args) {
+async function complete(args: string[]): Promise<void> {
   const id = Number(args[0]);
 
   if (!Number.isInteger(id)) {
@@ -22,4 +22,4 @@ async function complete(args) {
   console.log(`Completed task ${id}: "${result.task.text}"`);
 }
 
-module.exports = complete;
+export default complete;

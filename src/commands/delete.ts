@@ -1,6 +1,6 @@
-const { readTasks, writeTasks, deleteTask } = require('../taskStore');
+import { readTasks, writeTasks, deleteTask } from '../taskStore';
 
-async function del(args) {
+async function del(args: string[]): Promise<void> {
   const id = Number(args[0]);
 
   if (!Number.isInteger(id)) {
@@ -22,4 +22,4 @@ async function del(args) {
   console.log(`Deleted task ${id}.`);
 }
 
-module.exports = del;
+export default del;

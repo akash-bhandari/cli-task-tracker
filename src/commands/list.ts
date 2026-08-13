@@ -1,6 +1,6 @@
-const { readTasks } = require('../taskStore');
+import { readTasks } from '../taskStore';
 
-async function list() {
+async function list(): Promise<void> {
   const tasks = await readTasks();
 
   if (tasks.length === 0) {
@@ -14,4 +14,4 @@ async function list() {
   }
 }
 
-module.exports = list;
+export default list;

@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
-const add = require('./commands/add');
-const list = require('./commands/list');
-const complete = require('./commands/complete');
-const del = require('./commands/delete');
+import add from './commands/add';
+import list from './commands/list';
+import complete from './commands/complete';
+import del from './commands/delete';
 
-const args = process.argv.slice(2);
-const command = args[0];
-const rest = args.slice(1);
+const args: string[] = process.argv.slice(2);
+const command: string | undefined = args[0];
+const rest: string[] = args.slice(1);
 
-function printUsage() {
+function printUsage(): void {
   console.log(`Usage: node index.js <command> [args]
 
 Commands:
@@ -19,13 +19,13 @@ Commands:
   delete <id>      Delete a task`);
 }
 
-async function main() {
+async function main(): Promise<void> {
   switch (command) {
     case 'add':
       await add(rest);
       break;
     case 'list':
-      await list(rest);
+      await list();
       break;
     case 'complete':
       await complete(rest);
@@ -40,6 +40,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error('Unexpected error:', err.message);
+  console.error('Unexpected error:', (err as Error).message);
   process.exitCode = 1;
 });

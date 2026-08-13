@@ -1,9 +1,9 @@
-const { readTasks, writeTasks, addTask } = require('../taskStore');
+import { readTasks, writeTasks, addTask } from '../taskStore';
 
 /**
  * args: everything the user typed after "add", e.g. ['Buy', 'milk']
  */
-async function add(args) {
+async function add(args: string[]): Promise<void> {
   const text = args.join(' ');
   const tasks = await readTasks();
   const result = addTask(tasks, text);
@@ -19,4 +19,4 @@ async function add(args) {
   console.log(`Added task ${result.task.id}: "${result.task.text}"`);
 }
 
-module.exports = add;
+export default add;
