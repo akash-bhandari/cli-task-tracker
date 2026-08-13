@@ -5,7 +5,7 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "test": "node --test tests/*.test.js"
+    "test": "node --require ts-node/register --test tests/*.test.js"
   },
   "license": "MIT",
   "devDependencies": {
