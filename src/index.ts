@@ -4,6 +4,7 @@ import add from './commands/add';
 import list from './commands/list';
 import complete from './commands/complete';
 import del from './commands/delete';
+import { getErrorMessage } from './errors';
 
 const args: string[] = process.argv.slice(2);
 const command: string | undefined = args[0];
@@ -40,6 +41,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  console.error('Unexpected error:', (err as Error).message);
+  console.error('Unexpected error:', getErrorMessage(err));
   process.exitCode = 1;
 });

@@ -1,19 +1,20 @@
-const test = require('node:test');
-const assert = require('node:assert');
-const fs = require('fs').promises;
-const path = require('path');
+import test from 'node:test';
+import assert from 'node:assert';
+import * as fs from 'fs/promises';
+import * as path from 'path';
 
-const {
+import {
   readTasks,
   writeTasks,
   nextId,
   addTask,
   completeTask,
   deleteTask,
-} = require('../src/taskStore');
+} from '../src/taskStore';
+import { Task } from '../src/types';
 
 // Use a SEPARATE test file so tests never touch a real tasks.json a
-// human might be using (Task 14, Step 2 cheat sheet).
+// human might be using.
 const TEST_FILE = path.join(__dirname, 'tasks.test.json');
 
 test.beforeEach(async () => {
@@ -30,7 +31,12 @@ test('nextId returns 1 for an empty list', () => {
 });
 
 test('nextId returns max id + 1', () => {
-  assert.strictEqual(nextId([{ id: 1 }, { id: 5 }, { id: 3 }]), 6);
+  const tasks: Task[] = [
+    { id: 1, text: 'a', completed: false, createdAt: '2026-01-01' },
+    { id: 5, text: 'b', completed: false, createdAt: '2026-01-01' },
+    { id: 3, text: 'c', completed: false, createdAt: '2026-01-01' },
+  ];
+  assert.strictEqual(nextId(tasks), 6);
 });
 
 /* ---------------- add (store logic) ---------------- */
@@ -38,6 +44,7 @@ test('nextId returns max id + 1', () => {
 test('addTask creates a task with an incrementing id and adds it to the list', () => {
   const result = addTask([], 'Buy milk');
   assert.strictEqual(result.success, true);
+  if (!result.success) return; // narrows the union for TypeScript below
   assert.strictEqual(result.task.text, 'Buy milk');
   assert.strictEqual(result.task.completed, false);
   assert.strictEqual(result.task.id, 1);
@@ -47,13 +54,14 @@ test('addTask creates a task with an incrementing id and adds it to the list', (
 test('addTask fails clearly on empty text (error case)', () => {
   const result = addTask([], '   ');
   assert.strictEqual(result.success, false);
+  if (result.success) return;
   assert.match(result.error, /empty/i);
 });
 
 /* ---------------- list (via read/write round-trip) ---------------- */
 
 test('list: writeTasks then readTasks round-trips data correctly', async () => {
-  const sample = [
+  const sample: Task[] = [
     { id: 1, text: 'Buy milk', completed: false, createdAt: new Date().toISOString() },
     { id: 2, text: 'Walk the dog', completed: true, createdAt: new Date().toISOString() },
   ];
@@ -70,37 +78,47 @@ test('list: readTasks returns [] when the file does not exist (first run)', asyn
 /* ---------------- complete ---------------- */
 
 test('completeTask marks the matching task as completed', () => {
-  const tasks = [{ id: 1, text: 'Buy milk', completed: false, createdAt: '2026-01-01' }];
+  const tasks: Task[] = [
+    { id: 1, text: 'Buy milk', completed: false, createdAt: '2026-01-01' },
+  ];
   const result = completeTask(tasks, 1);
   assert.strictEqual(result.success, true);
+  if (!result.success) return;
   assert.strictEqual(result.task.completed, true);
   assert.strictEqual(result.tasks[0].completed, true);
 });
 
 test('completing a non-existent id does not throw and returns a clear failure result (error case)', () => {
-  const tasks = [{ id: 1, text: 'Buy milk', completed: false }];
+  const tasks: Task[] = [
+    { id: 1, text: 'Buy milk', completed: false, createdAt: '2026-01-01' },
+  ];
   const result = completeTask(tasks, 999);
   assert.strictEqual(result.success, false);
+  if (result.success) return;
   assert.strictEqual(result.error, 'Task with id 999 not found');
 });
 
 /* ---------------- delete ---------------- */
 
 test('deleteTask removes the matching task', () => {
-  const tasks = [
-    { id: 1, text: 'Buy milk', completed: false },
-    { id: 2, text: 'Walk the dog', completed: false },
+  const tasks: Task[] = [
+    { id: 1, text: 'Buy milk', completed: false, createdAt: '2026-01-01' },
+    { id: 2, text: 'Walk the dog', completed: false, createdAt: '2026-01-01' },
   ];
   const result = deleteTask(tasks, 2);
   assert.strictEqual(result.success, true);
+  if (!result.success) return;
   assert.strictEqual(result.tasks.length, 1);
   assert.strictEqual(result.tasks[0].id, 1);
 });
 
 test('deleting a non-existent id does not throw and returns a clear failure result (error case)', () => {
-  const tasks = [{ id: 1, text: 'Buy milk', completed: false }];
+  const tasks: Task[] = [
+    { id: 1, text: 'Buy milk', completed: false, createdAt: '2026-01-01' },
+  ];
   const result = deleteTask(tasks, 999);
   assert.strictEqual(result.success, false);
+  if (result.success) return;
   assert.strictEqual(result.error, 'Task with id 999 not found');
 });
 

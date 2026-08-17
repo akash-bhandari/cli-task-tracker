@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Task, AddResult, CompleteResult, DeleteResult } from './types';
+import { isErrnoException, getErrorMessage } from './errors';
 
 const TASKS_FILE: string = path.join(__dirname, '..', 'tasks.json');
 
@@ -15,7 +16,7 @@ async function readTasks(filePath: string = TASKS_FILE): Promise<Task[]> {
   try {
     raw = await fs.readFile(filePath, 'utf-8');
   } catch (err) {
-    if ((err as NodeJS.ErrnoException).code === 'ENOENT') {
+    if (isErrnoException(err) && err.code === 'ENOENT') {
       return []; // first run — no file yet, that's expected
     }
     throw err;
@@ -29,7 +30,7 @@ async function readTasks(filePath: string = TASKS_FILE): Promise<Task[]> {
   } catch (err) {
     throw new Error(
       `${path.basename(filePath)} is corrupted and could not be parsed as JSON. ` +
-      `Back it up and delete it, or fix it by hand. (${(err as Error).message})`
+      `Back it up and delete it, or fix it by hand. (${getErrorMessage(err)})`
     );
   }
 }
